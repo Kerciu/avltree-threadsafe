@@ -3,38 +3,39 @@ package com.jobboard.avltree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AVLTree implements Tree {
 
     private TreeNode root;
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public AVLTree() {
         this.root = null;
     }
 
     @Override
-    public synchronized void put(byte[] key, byte[] value) {
-        this.root = this.putHelper(this.root, key, value);
+    public void put(byte[] key, byte[] value) {
+        lock.writeLock().lock();
+        try {
+            this.root = this.putHelper(this.root, key, value);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     @Override
     public byte[] get(byte[] key) {
+        byte[] value;
+        lock.readLock().lock();
 
-        TreeNode current = root;
-
-        while (current != null) {
-            int compare = compareTreeKeys(key, current.getKey());
-
-            if (compare < 0) {
-                current = current.getLeft();
-            } else if (compare > 0) {
-                current = current.getRight();
-            } else {
-                return current.getValue();
-            }
+        try {
+            value = this.getHelper(key);
+        } finally {
+            lock.readLock().unlock();
         }
 
-        return null;
+        return value;
     }
 
     public List<byte[]> getKeysInOrder() {
@@ -65,9 +66,27 @@ public class AVLTree implements Tree {
         inOrderHelper(node.getRight(), keyList);
     }
 
+    private byte[] getHelper(byte[] key) {
+        TreeNode current = root;
+
+        while (current != null) {
+            int compare = compareTreeKeys(key, current.getKey());
+
+            if (compare < 0) {
+                current = current.getLeft();
+            } else if (compare > 0) {
+                current = current.getRight();
+            } else {
+                return current.getValue();
+            }
+        }
+
+        return null;
+    }
+
     private TreeNode putHelper(TreeNode node, byte[] key, byte[] value) {
         if (node == null) {
-            return new TreeNode(key, value);
+            return new TreeNode(key, value, 1);
         }
 
         int compare = this.compareTreeKeys(key, node.getKey());

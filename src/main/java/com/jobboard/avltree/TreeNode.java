@@ -8,9 +8,10 @@ public class TreeNode {
     private TreeNode left;
     private TreeNode right;
 
-    public TreeNode(byte[] key, byte[] value) {
+    public TreeNode(byte[] key, byte[] value, int height) {
         this.key = key;
         this.value = value;
+        this.height = height;
     }
 
     public TreeNode getLeft() {

@@ -1,10 +1,10 @@
 package com.jobboard.avltree;
 
 public class TreeNode {
-    private byte[] key;
+    private final byte[] key;
     private byte[] value;
 
-    // private int height;
+    private int height;
     private TreeNode left;
     private TreeNode right;
 
@@ -29,6 +29,10 @@ public class TreeNode {
         return value;
     }
 
+    public int getHeight() {
+        return height;
+    }
+
     public void setLeft(TreeNode left) {
         this.left = left;
     }
@@ -37,11 +41,11 @@ public class TreeNode {
         this.right = right;
     }
 
-    public void setKey(byte[] key) {
-        this.key = key;
-    }
-
     public void setValue(byte[] value) {
         this.value = value;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 }

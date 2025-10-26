@@ -47,33 +47,94 @@ public class AVLTree implements BSTTree {
             node.setRight(putHelper(node.getRight(), key, value));
         } else {
             node.setValue(value);
+            return node;
+        }
+
+        updateHeight(node);
+
+        int balanceFactor = getBalanceFactor(node);
+
+        // LL
+        if (balanceFactor > 1 && getBalanceFactor(node.getLeft()) >= 0) {
+            return rightRotate(node);
+        }
+
+        // LR
+        if (balanceFactor > 1 && getBalanceFactor(node.getLeft()) < 0) {
+            node.setLeft(leftRotate(node.getLeft()));
+            return rightRotate(node);
+        }
+
+        // RR
+        if (balanceFactor < -1 && getBalanceFactor(node.getRight()) <= 0) {
+            return leftRotate(node);
+        }
+
+        // RL
+        if (balanceFactor < -1 && getBalanceFactor(node.getRight()) > 0) {
+            node.setRight(rightRotate(node.getRight()));
+            return leftRotate(node);
         }
 
         return node;
     }
 
-    private TreeNode rightRotate(TreeNode node) {
-        if (node == null) {
+    private TreeNode rightRotate(TreeNode y) {
+        if (y == null) {
             return null;
         }
 
-        TreeNode left = node.getLeft();
-        node.setLeft(left.getRight());
-        left.setRight(node.getRight());
+        TreeNode x = y.getLeft();
+        TreeNode T2 = x.getRight();
 
-        return node;
+        x.setRight(y);
+        y.setLeft(T2);
+
+        updateHeight(y);
+        updateHeight(x);
+
+        return x;
     }
 
-    private TreeNode leftRotate(TreeNode node) {
-        if (node == null) {
+    private TreeNode leftRotate(TreeNode x) {
+        if (x == null) {
             return null;
         }
 
-        TreeNode right = node.getRight();
-        node.setRight(right.getLeft());
-        right.setLeft(node.getLeft());
+        TreeNode y = x.getRight();
+        TreeNode T2 = y.getLeft();
 
-        return node;
+        y.setLeft(x);
+        x.setRight(T2);
+
+        updateHeight(x);
+        updateHeight(y);
+
+        return y;
+    }
+
+    private int getBalanceFactor(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        return getHeightSafely(node.getLeft()) - getHeightSafely(node.getRight());
+    }
+
+    private void updateHeight(TreeNode node) {
+        node.setHeight(
+            1 + Math.max(
+                getHeightSafely(node.getLeft()),
+                getHeightSafely(node.getRight())
+            )
+        );
+    }
+
+    private int getHeightSafely(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+
+        return node.getHeight();
     }
 
     private int compareTreeKeys(byte[] data1, byte[] data2) {

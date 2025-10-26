@@ -118,7 +118,7 @@ public class AVLTreeTest {
         assertArrayEquals(s("vC"), tree.get(s("C")));
     }
 
-    // O(nlogn) test
+    // O(logn) test
     @Test
     @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void testPerformanceOnDegenerateCase() {

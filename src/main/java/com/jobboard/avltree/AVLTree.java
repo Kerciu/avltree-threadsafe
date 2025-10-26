@@ -1,8 +1,10 @@
 package com.jobboard.avltree;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-public class AVLTree implements BSTTree {
+public class AVLTree implements Tree {
 
     private TreeNode root;
 
@@ -11,7 +13,7 @@ public class AVLTree implements BSTTree {
     }
 
     @Override
-    public void put(byte[] key, byte[] value) {
+    public synchronized void put(byte[] key, byte[] value) {
         this.root = this.putHelper(this.root, key, value);
     }
 
@@ -33,6 +35,34 @@ public class AVLTree implements BSTTree {
         }
 
         return null;
+    }
+
+    public List<byte[]> getKeysInOrder() {
+        List<byte[]> keyList = new ArrayList<>();
+
+        inOrderHelper(this.root, keyList);
+        return keyList;
+    }
+
+    public boolean allNodesBalanced() {
+        return checkBalanced(root);
+    }
+
+    private boolean checkBalanced(TreeNode node) {
+        if (node == null) return true;
+        int balance = getBalanceFactor(node);
+        if (Math.abs(balance) > 1) return false;
+        return checkBalanced(node.getLeft()) && checkBalanced(node.getRight());
+    }
+
+    private void inOrderHelper(TreeNode node, List<byte[]> keyList) {
+        if (node == null) {
+            return;
+        }
+
+        inOrderHelper(node.getLeft(), keyList);
+        keyList.add(node.getKey());
+        inOrderHelper(node.getRight(), keyList);
     }
 
     private TreeNode putHelper(TreeNode node, byte[] key, byte[] value) {

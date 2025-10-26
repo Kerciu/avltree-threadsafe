@@ -2,9 +2,12 @@ import com.jobboard.avltree.AVLTree;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AVLTreeTest {
 
@@ -69,5 +72,95 @@ public class AVLTreeTest {
 
         assertArrayEquals(s("emptyKeyVal"), tree.get(s("")));
         assertArrayEquals(s("a_val"), tree.get(s("a")));
+    }
+
+    @Test
+    void testRightRight() {
+        tree.put(s("A"), s("vA"));
+        tree.put(s("B"), s("vB"));
+        tree.put(s("C"), s("vC")); // <- rotation
+
+        assertArrayEquals(s("vA"), tree.get(s("A")));
+        assertArrayEquals(s("vB"), tree.get(s("B")));
+        assertArrayEquals(s("vC"), tree.get(s("C")));
+    }
+
+    @Test
+    void testLeftLeft() {
+        tree.put(s("C"), s("vC"));
+        tree.put(s("B"), s("vB"));
+        tree.put(s("A"), s("vA")); // <- rotation
+
+        assertArrayEquals(s("vA"), tree.get(s("A")));
+        assertArrayEquals(s("vB"), tree.get(s("B")));
+        assertArrayEquals(s("vC"), tree.get(s("C")));
+    }
+
+    @Test
+    void testLeftRight() {
+        tree.put(s("C"), s("vC"));
+        tree.put(s("A"), s("vA"));
+        tree.put(s("B"), s("vB")); // <- rotation
+
+        assertArrayEquals(s("vA"), tree.get(s("A")));
+        assertArrayEquals(s("vB"), tree.get(s("B")));
+        assertArrayEquals(s("vC"), tree.get(s("C")));
+    }
+
+    @Test
+    void testRightLeft() {
+        tree.put(s("A"), s("vA"));
+        tree.put(s("C"), s("vC"));
+        tree.put(s("B"), s("vB")); // <- rotation
+
+        assertArrayEquals(s("vA"), tree.get(s("A")));
+        assertArrayEquals(s("vB"), tree.get(s("B")));
+        assertArrayEquals(s("vC"), tree.get(s("C")));
+    }
+
+    // O(nlogn) test
+    @Test
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
+    void testPerformanceOnDegenerateCase() {
+        int count = 10_000;
+
+        for (int i = 0; i < count; i++) {
+            String key = String.format("key-%05d", i);
+            tree.put(s(key), s("v" + i));
+        }
+
+        for (int i = 0; i < count; i++) {
+            String key = String.format("key-%05d", i);
+            assertArrayEquals(s("v" + i), tree.get(s(key)));
+        }
+    }
+
+    @Test
+    void testInOrderTraversalKeepsSorting() {
+        tree.put(s("D"), s("val_D"));
+        tree.put(s("B"), s("val_B"));
+        tree.put(s("E"), s("val_E"));
+        tree.put(s("A"), s("val_A"));
+        tree.put(s("C"), s("val_C"));
+
+        List<byte[]> expectedKeys = List.of(s("A"), s("B"), s("C"), s("D"), s("E"));
+        List<byte[]> actualKeys = tree.getKeysInOrder();
+
+        assertEquals(expectedKeys.size(), actualKeys.size());
+        for (int i = 0; i < expectedKeys.size(); i++) {
+            assertArrayEquals(expectedKeys.get(i), actualKeys.get(i));
+        }
+    }
+
+    @Test
+    void testAllNodesHaveBalanceFactorAtMostOne() {
+        tree.put(s("A"), s("vA"));
+        tree.put(s("B"), s("vB"));
+        tree.put(s("C"), s("vC"));
+        tree.put(s("D"), s("vD"));
+        tree.put(s("E"), s("vE"));
+        tree.put(s("F"), s("vF"));
+
+        assertTrue(tree.allNodesBalanced(), "Found node with |balance| > 1");
     }
 }
